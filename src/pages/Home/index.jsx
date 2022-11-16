@@ -1,8 +1,9 @@
 import React from 'react';
+import styles from "./index.module.less"
 
-function Home(props) {
+function Home() {
 	return (
-		<div>home</div>
+		<div className={styles.main}>Welcome</div>
 	);
 }
 

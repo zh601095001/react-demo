@@ -6,8 +6,6 @@ module.exports = function (app) {
             target: "protocol://host:port",
             changeOrigin: true,
             pathRewrite: {'^/api': ''}
-
         })
     )
-
 };

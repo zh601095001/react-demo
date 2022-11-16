@@ -10,7 +10,6 @@ module.exports = {
                 customizeTheme: {
                     // '@primary-color': '#3ace23',
                     // '@layout-header-background':'#24292f'
-
                 },
             },
         },
