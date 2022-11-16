@@ -1,46 +1,127 @@
-# Getting Started with Create React App
+# 1.在当前目录下快速创建create-react-app ts项目
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+```sh
+yarn create react-app . --template typescript
+yarn add antd
+yarn add @craco/craco
+yarn add craco-antd
+yarn add craco-less
+yarn add nodemon
+yarn add react-router-dom
+yarn add redux
+yarn add react-redux
+yarn add @reduxjs/toolkit
+yarn add http-proxy-middleware -D
+```
 
-## Available Scripts
+创建`craco.config.js`配置文件：
 
-In the project directory, you can run:
+```js
+const CracoAntDesignPlugin = require('craco-antd');
+const CracoLessPlugin = require('craco-less')
+const {loaderByName} = require("@craco/craco");
+process.env.BROWSER = "none"
+module.exports = {
+    plugins: [
+        {
+            plugin: CracoAntDesignPlugin,
+            options: {
+                customizeTheme: {
+                    '@primary-color': '#3ace23',
+                    '@layout-header-background':'#24292f'
 
-### `yarn start`
+                },
+            },
+        },
+        {
+            plugin: CracoLessPlugin,
+            options: {
+                modifyLessRule(lessRule, context) {
+                    // You have to exclude these file suffixes first,
+                    // if you want to modify the less module's suffix
+                    lessRule.exclude = /\.module\.less$/
+                    return lessRule
+                },
+                modifyLessModuleRule(lessModuleRule, context) {
+                    // Configure the file suffix
+                    lessModuleRule.test = /\.module\.less$/
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+                    // Configure the generated local ident name.
+                    const cssLoader = lessModuleRule.use.find(loaderByName('css-loader'))
+                    cssLoader.options.modules = {
+                        localIdentName: '[local]_[hash:base64:5]'
+                    }
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+                    return lessModuleRule
+                },
 
-### `yarn test`
+                lessLoaderOptions: {
+                    lessOptions: {
+                        // modifyVars: {"@primary-color": "#1DA57A"},
+                        javascriptEnabled: true
+                    }
+                }
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+                // modifyVars: {
+                //     'primary-color': '#1DA57A',
+                //     'link-color': '#1DA57A',
+                //     'border-radius-base': '2px',
+                // },
+            }
+        }
+    ],
+};
+```
 
-### `yarn build`
+修改`package.json`:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```json
+{
+  "scripts": {
+    "start": "nodemon -w craco.config.js  --exec \"craco start\"",
+    "build": "craco build",
+    "test": "craco test"
+  },  
+}  
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+设置代理`src/setupProxy.js`：
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```js
+const {createProxyMiddleware} = require("http-proxy-middleware");
+module.exports = function (app) {
+    app.use(
+        "/api",
+        createProxyMiddleware({
+            target: "服务器名:端口",
+            changeOrigin: true,
+            pathRewrite: {'^/api': ''}
 
-### `yarn eject`
+        })
+    )
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+};
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+修改`src/react-app-env.d.ts`:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+```ts
+/// <reference types="react-scripts" />
+// 配置支持模块化less
+declare module '*.module.less' {
+    const classes: {
+        readonly [key: string]: string
+    }
+    export default classes
+    declare module '*.less'
+}
+```
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
-## Learn More
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+# 2.启动项目
+```shell
+yarn start
+yarn build
+yarn eject
+```
